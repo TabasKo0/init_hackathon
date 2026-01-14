@@ -2,11 +2,11 @@
 'use client';
 
 export default function UpdateCard({ update_props }) {
-    const { title, content, priority, pinned, created_at } = update_props;
+    const { title, content,created_by ,is_important, created_at } = update_props;
 
     // border color 
     var borderColor = 'border-green-400';
-    if (priority === 'high') {
+    if (is_important) {
         borderColor = 'border-red-500';
     } 
 
@@ -21,7 +21,7 @@ export default function UpdateCard({ update_props }) {
             >
                 <div className="flex items-center justify-between mb-2">
                     <h2 className="text-lg font-bold flex items-center gap-2">
-                        {pinned && (
+                        {is_important && (
                             <span className="text-red-400 text-2xl">●</span>
                         )}
                         {title}
@@ -33,6 +33,9 @@ export default function UpdateCard({ update_props }) {
 
                 <p className="text-gray-300 text-sm ">
                     {content}
+                </p>
+                <p className="text-gray-500 text-xs">
+                    Created by: {created_by}
                 </p>
 
                 

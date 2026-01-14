@@ -1,33 +1,81 @@
 'use client';
  
 import UpdateCard from "../components/UpdateCard";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export default function UpdatesPage() {
+
+  const [updates, setUpdates] = useState([]);
+  
+  async function loadInitial() {
+    const { data, error } = await supabase
+      .from('updates')
+      .select('*')
+      .order('is_important', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (!error) setUpdates(data);
+  }
+
+  useEffect(() => {
+    loadInitial();
+
+    const channel = supabase
+      .channel('updates-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'updates' },
+        payload => {
+          setUpdates(prev => {
+            if (payload.eventType === 'INSERT') {
+              return [payload.new, ...prev];
+            }
+            if (payload.eventType === 'UPDATE') {
+              return prev.map(u =>
+                u.id === payload.new.id ? payload.new : u
+              );
+            }
+            if (payload.eventType === 'DELETE') {
+              return prev.filter(u => u.id !== payload.old.id);
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+
+
   
    
-  const updates = [
+  const updates1 = [
     {
       id: 1,
       title: 'Welcome to the Hackathon!',
         content: 'We are excited to kick off the hackathon. Stay tuned for updates!',
-        priority: 'high',
-        pinned: true,
+        created_by: 'admin',
+        is_important: true,
         created_at: '2024-06-01T10:00:00Z',
     },
     {
       id: 2,
       title: 'Schedule Released',
         content: 'The schedule for the hackathon has been released. Check it out on the website.',
-        priority: 'normal',
-        pinned: false,
+        created_by: 'admin',
+        is_important: false,
         created_at: '2024-06-02T12:00:00Z',
     },
     {
       id: 3,
       title: 'New Mentor Added',
         content: 'We have added a new mentor to our team. Welcome aboard!',
-        priority: 'low',
-        pinned: false,
+        created_by: 'admin',
+        is_important: false,
         created_at: '2024-06-03T14:00:00Z',
     },
   ]
