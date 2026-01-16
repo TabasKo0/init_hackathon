@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { login, signup } from './actions'
+import { login } from './actions'
 
 export default function LoginPage() {
   return (
@@ -37,21 +37,20 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="pt-2">
               <button
                 formAction={login}
                 className="w-full rounded-lg bg-gradient-to-r from-[#ff40f3] to-[#21f6ff] px-4 py-3 font-semibold text-black shadow-[0_0_24px_rgba(255,64,243,0.55)] hover:shadow-[0_0_32px_rgba(33,246,255,0.5)] transition transform hover:scale-[1.02]"
               >
                 Log in
               </button>
-              <button
-                formAction={signup}
-                className="w-full rounded-lg border-2 border-[#21f6ff] px-4 py-3 font-semibold text-[#21b8ff] dark:text-[#21f6ff] hover:bg-[#21f6ff10] dark:hover:bg-[#21f6ff12] transition"
-              >
-                Create account
-              </button>
             </div>
           </form>
+
+          <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
+            Don't have an account?{' '}
+            <Link href="/signup" className="neon-link font-semibold">Sign up</Link>
+          </div>
         </div>
 
         <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">

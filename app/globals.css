@@ -682,12 +682,7 @@ a {
 }
 
 /* Navbar & Footer */
-.navbar {
-  padding: 1rem 0;
-  position: sticky;
-    top: 90vh;
-  z-index: 100;
-}
+
 
 .nav-container {
   max-width: 1200px;
