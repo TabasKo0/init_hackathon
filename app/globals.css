@@ -280,7 +280,6 @@ a {
 .admin-nav h3 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: var(--foreground);
 }
 
 .nav-links {
@@ -291,7 +290,6 @@ a {
 
 .nav-card {
   display: block;
-  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
@@ -685,12 +683,9 @@ a {
 
 /* Navbar & Footer */
 .navbar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
   padding: 1rem 0;
-  box-shadow: var(--glow-soft);
   position: sticky;
-  top: 0;
+    top: 90vh;
   z-index: 100;
 }
 
@@ -713,11 +708,9 @@ a {
   display: flex;
   gap: 2rem;
   margin: 0;
-  padding: 0;
 }
 
 .nav-menu a {
-  color: var(--muted);
   text-decoration: none;
   transition: color 0.3s ease;
 }

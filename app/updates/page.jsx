@@ -79,7 +79,7 @@ export default function UpdatesPage() {
   ]
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+    <div className="relative h-[90vh] w-full overflow-hidden bg-black">
 
       {/* AI shit */}
       {/* Purple gradient background */}
