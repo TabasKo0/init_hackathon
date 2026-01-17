@@ -429,7 +429,7 @@ export default function InitHackathon() {
                         elasticity={0.7}
                         className='w-[20vw] py-4 bg-black/20'
                       >
-            <a href="#" className="inline-flex items-center gap-2  rounded text-lg font-bold tracking-widest text-purple-500  transition-all duration-300 group ">
+            <a href="/signup" className="inline-flex items-center gap-2  rounded text-lg font-bold tracking-widest text-purple-500  transition-all duration-300 group ">
               INITIALIZE SYSTEM
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a></LiquidGlass>
