@@ -81,7 +81,6 @@ export default function DashboardClient({ user, dashboardData }) {
                 </div>
                 <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                   <p className="text-xs text-slate-400 mb-1">Created</p>
-                  <p className="text-lg font-bold text-white">{new Date(dashboardData.team.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
 

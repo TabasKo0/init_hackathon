@@ -451,8 +451,8 @@ export default function InitHackathon() {
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
           <ChevronDown className="w-6 h-6" />
         </div>
+        </div>
       </header>
-
       {/* Philosophy Section */}
       <section id="about" className="py-16 md:py-24 relative z-[1] bg-gradient-to-b from-transparent via-black/20 to-black/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
