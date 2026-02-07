@@ -32,33 +32,33 @@ function Brain() {
     }
   });
 
+  const wireRef = useRef();
+
+  // Gradually shift hues over time
+  useFrame((state) => {
+    if (wireRef.current) {
+      const t = state.clock.getElapsedTime();
+      const hue = (Math.sin(t * 0.1) + 1) / 2; // 0 -> 1
+      // color and emissive updated smoothly via HSL
+      wireRef.current.material.color.setHSL(hue, 0.85, 0.55);
+      wireRef.current.material.emissive.setHSL((hue + 0.12) % 1, 0.9, 0.45);
+    }
+  });
+
   return (
     <group ref={meshRef} scale={[0.8, 0.8, 0.8]}>
       {/* Abstract Cyber Brain using TorusKnot for convoluted structure */}
-     
-      <mesh>
-        {/* args: [radius, tube, tubularSegments, radialSegments, p, q] */}
-        {/* p=3, q=4 creates a dense, knotted structure resembling brain folds */}
-        <meshStandardMaterial 
-          color="#1a0b2e" 
-          roughness={0.5} 
-          //roughness={0.9} 
-          metalness={1.0} 
-        />
-      </mesh>
       {/* Wireframe Overlay for the "Tech" look */}
-      <mesh>
-        <torusKnotGeometry args={[9.52, 9.6, 500, 30, 11, 9]} />
-        <meshStandardMaterial 
-          wireframe 
-          color="#9f38ff" 
-          emissive="#bb00d7"
-          emissiveIntensity={1.5}
-          //color="#8400ff" 
-          //emissive="#785d7d"
-          //emissiveIntensity={1.5}
+      <mesh ref={wireRef}>
+        <torusKnotGeometry args={[9.52, 9.6, 300, 40, 11, 9]} />
+        <meshStandardMaterial
+          wireframe
+          // base color/emissive serve as starting values; runtime updates use setHSL
+          color="#d900ff"
+          emissive="#ffa5ee"
+          emissiveIntensity={0.19}
+          opacity={0.89}
           transparent
-          opacity={0.4}
         />
       </mesh>
     </group>
@@ -210,7 +210,7 @@ export default function InitHackathon() {
   ];
 
   return (
-    <div className="bg-transparent text-white min-h-screen font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden relative z-[1]">
+    <div className="bg-transparent text-white min-h-screen font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden relative z-[1] snap-y snap-mandatory">
       {/* External Fonts & Icons */}
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
       <style jsx global>{`
@@ -322,6 +322,15 @@ export default function InitHackathon() {
           transform: translateY(0);
         }
 
+        /* Scroll snap behavior */
+        html, body {
+          scroll-behavior: smooth;
+          scroll-snap-type: y mandatory;
+        }
+        .snap-start {
+          scroll-snap-align: start;
+        }
+
         /* Timeline Connector - Desktop Only */
         @media (min-width: 768px) {
             .timeline-line::before {
@@ -390,7 +399,7 @@ export default function InitHackathon() {
       />
 
       {/* Hero Section */}
-      <header className="relative h-screen flex items-center justify-center text-center px-4 overflow-hidden z-[1]">
+      <header className="relative h-screen flex items-center justify-center text-center px-4 overflow-hidden z-[1] snap-start">
         
         {/* 3D Brain Background */}
         <div className="absolute inset-0 w-full h-full z-0 opacity-40 pointer-events-none">
@@ -423,7 +432,7 @@ export default function InitHackathon() {
               <MapPin className="w-4 h-4 text-purple-500" /> Kasturba Hall
             </div>
           </div>
-         
+         <a href="https://eventhubcc.vit.ac.in/EventHub/">
           <div className="mt-12 ">
             <LiquidGlass
                         borderRadius={8}
@@ -435,26 +444,19 @@ export default function InitHackathon() {
                         elasticity={0.7}
                         className='w-[20vw] py-4 bg-black/20'
                       >
-            <a href="/signup" className="inline-flex items-center gap-2  rounded text-lg font-bold tracking-widest text-purple-500  transition-all duration-300 group ">
+            <div className="inline-flex items-center gap-2  rounded text-lg font-bold tracking-widest text-purple-200  transition-all duration-300 group ">
               INITIALIZE SYSTEM
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a></LiquidGlass>
-
-          <div className="mt-12">
-            <a href="#" className="inline-flex items-center gap-2 px-8 py-4 rounded text-lg font-bold tracking-widest border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all duration-300 group bg-black/20 backdrop-blur-sm">
-              INITIALIZE SYSTEM
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
+            </div></LiquidGlass>
+          </div></a>
         </div>
         
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
           <ChevronDown className="w-6 h-6" />
         </div>
-        </div>
       </header>
       {/* Philosophy Section */}
-      <section id="about" className="py-16 md:py-24 relative z-[1] bg-gradient-to-b from-transparent via-black/20 to-black/50">
+      <section id="about" className="py-16 md:py-24 relative z-[1] bg-gradient-to-b from-transparent via-black/20 to-black/50 snap-start min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="reveal">
@@ -464,7 +466,7 @@ export default function InitHackathon() {
                 <strong className="text-white ml-1">educational accelerator</strong>. 
               </p>
               <p className="text-gray-400 mb-8 text-base md:text-lg leading-relaxed">
-                We don't just tell you to build; we teach you how. With our mandatory "Zero to One" seminar, 
+                We don&apos;t just tell you to build; we teach you how. With our mandatory &quot;Zero to One&quot; seminar, 
                 even a student who has never written a backend line of code will deploy a full-stack app by the 24th hour.
               </p>
               <ul className="space-y-4 font-mono text-sm text-gray-300">
@@ -493,7 +495,7 @@ export default function InitHackathon() {
                   {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">deploy</span>();{'\n'}
                   {'\n'}
                   {'  '}<span className="text-gray-500">// Returns: A new career path</span>{'\n'}
-                  {'  '}<span className="text-fuchsia-400">return</span> <span className="text-purple-400">"Builder"</span>;{'\n'}
+                  {'  '}<span className="text-fuchsia-400">return</span> <span className="text-purple-400">&quot;Builder&quot;</span>;{'\n'}
                   {'}'};
                 </pre>
               </div>
@@ -503,7 +505,7 @@ export default function InitHackathon() {
       </section>
 
       {/* Tracks & Prizes */}
-      <section id="tracks" className="py-16 md:py-24 bg-gradient-to-b from-black/50 via-black/70 to-black/50 relative z-[1]">
+      <section id="tracks" className="py-16 md:py-24 bg-gradient-to-b from-black/50 via-black/70 to-black/50 relative z-[1] snap-start min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16 reveal">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-mono">Total Bounty: <span className="text-purple-500">₹20,000</span></h2>
@@ -565,7 +567,7 @@ export default function InitHackathon() {
       </section>
 
       {/* Timeline */}
-      <section id="schedule" className="py-16 md:py-24 relative overflow-hidden z-[1] bg-gradient-to-b from-black/50 via-transparent to-black/50">
+      <section id="schedule" className="py-16 md:py-24 relative overflow-hidden z-[1] bg-gradient-to-b from-black/50 via-transparent to-black/50 snap-start min-h-screen">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 md:mb-16 text-center font-mono">Run of Show</h2>
           
@@ -633,7 +635,7 @@ export default function InitHackathon() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-16 md:py-24 bg-gradient-to-b from-black/50 via-black/70 to-black relative z-[1]">
+      <section id="faq" className="py-16 md:py-24 bg-gradient-to-b from-black/50 via-black/70 to-black relative z-[1] snap-start min-h-screen">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center font-mono">Knowledge Base</h2>
           
@@ -642,7 +644,9 @@ export default function InitHackathon() {
               { q: 'Do I need a team?', a: 'You can register solo! We will have a team-formation mixer at 11:30 AM to help you find teammates.' },
               { q: "I'm a fresher and know nothing. Should I come?", a: 'YES! That is exactly why we created the "Freshers Track" and the morning Seminar. We will teach you what you need to know.' },
               { q: 'What should I bring?', a: 'Laptop, Charger, Extension Cord (recommended), Water Bottle, Toiletries, and a Hoodie (it gets cold at night).' },
-              { q: 'Can I use pre-existing code?', a: 'No. You can use libraries and frameworks, but the core application code must be written during the 24 hours.' }
+              { q: 'Can I use pre-existing code?', a: 'No. You can use libraries and frameworks, but the core application code must be written during the 24 hours.' },
+              { q: 'How to Join', a: `Find code init() on  https://eventhubcc.vit.ac.in/EventHub/ and register there.` }
+
             ].map((faq, idx) => (
               <div key={idx} className="border border-white/10 rounded-lg overflow-hidden reveal">
                 <button 

@@ -18,11 +18,14 @@ export async function login(formData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/error')
+    const message = error.message.includes('Invalid login credentials')
+      ? 'Incorrect password'
+      : error.message
+    return { error: message }
   }
 
   revalidatePath('/', 'layout')
-  redirect('/account')
+  return { ok: true }
 }
 
 export async function signup(formData) {
@@ -38,9 +41,9 @@ export async function signup(formData) {
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    redirect('/error')
+    return { error: error.message }
   }
 
   revalidatePath('/', 'layout')
-  redirect('/account')
+  return { ok: true }
 }

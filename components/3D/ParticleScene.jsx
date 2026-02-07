@@ -10,10 +10,10 @@ export function ParticleScene() {
       <pointLight position={[-10, -10, -10]} intensity={0.8} color="#23e6ff" />
       
       <Sparkles 
-        count={100}
-        scale={15}
-        size={5}
-        speed={0.8}
+        count={500}
+        scale={7}
+        size={7}
+        speed={0.3}
         opacity={0.8}
         color="#f5ff64"
       />

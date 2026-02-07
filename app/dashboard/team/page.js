@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
-import { DUMMY_TEAMS, DUMMY_MEMBERS } from '@/lib/dashboardHelpers'
+import { getUserProfile, getTeamData, getTeamMembers } from '@/lib/dashboardHelpers'
 import TeamClient from './TeamClient'
 
 export default async function TeamPage() {
@@ -15,9 +15,18 @@ export default async function TeamPage() {
     redirect('/login')
   }
 
-  const team = DUMMY_TEAMS[0]
-  const members = DUMMY_MEMBERS
-  const isLeader = members[0].id === user.id // First member is leader for demo
+  const profile = await getUserProfile(supabase, user.id)
+
+  let team = null
+  let members = []
+  if (profile?.team_id) {
+    team = await getTeamData(supabase, profile.team_id)
+    if (team) {
+      members = await getTeamMembers(supabase, team.id)
+    }
+  }
+
+  const isLeader = !!team && (team.owner_id === user.id || profile?.team_role === 'leader')
 
   return <TeamClient user={user} team={team} members={members} isLeader={isLeader} />
 }

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
-import { Canvas } from '@react-three/fiber'
 import { ParticleScene } from './3D/ParticleScene'
 
 export default function DashboardLayout({ user, children }) {
@@ -36,12 +35,7 @@ export default function DashboardLayout({ user, children }) {
           border-r border-[#2b123d] transition-transform duration-300 z-40
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          {/* 3D Floating Model */}
-          <div className="h-40 w-full relative">
-            <Canvas camera={{ position: [0, 0, 3] }}>
-              <ParticleScene />
-            </Canvas>
-          </div>
+         
 
           {/* User Info */}
           <div className="px-4 py-4 border-b border-[#2b123d]">

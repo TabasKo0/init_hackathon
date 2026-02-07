@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { signup } from '../login/actions'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 export default function SignupPage() {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
+  const [isWorking, setIsWorking] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -16,19 +17,44 @@ export default function SignupPage() {
     const confirmPassword = formData.get('confirmPassword')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      toast.error('Passwords do not match')
       return
     }
 
-    setError('')
-    const userEmail = formData.get('email')
+    const userEmail = String(formData.get('email') || '').trim()
+    const normalizedEmail = userEmail.toLowerCase()
     setEmail(userEmail)
 
     try {
-      await signup(formData)
+      setIsWorking(true)
+      const sheetResponse = await fetch('/api/registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail }),
+      })
+
+      if (!sheetResponse.ok) {
+        toast.error('Unable to verify registration right now')
+        return
+      }
+
+      const { exists } = await sheetResponse.json()
+      if (!exists) {
+        toast.error('you are not registered')
+        return
+      }
+
+      const result = await signup(formData)
+      if (result?.error) {
+        toast.error(result.error)
+        return
+      }
+
       setShowConfirmation(true)
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setIsWorking(false)
     }
   }
 
@@ -44,7 +70,7 @@ export default function SignupPage() {
                 We've sent a confirmation email to <span className="font-semibold text-[#21f6ff]">{email}</span>
               </p>
               <p className="text-slate-600 dark:text-slate-400 mb-8">
-                Please check your email and click the activation link to complete your signup.
+                Kindly authenticate your email from inbox to complete signup.
               </p>
 
               <div className="space-y-3">
@@ -73,12 +99,6 @@ export default function SignupPage() {
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {error && (
-              <div className="p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-semibold text-slate-900 dark:text-white">Email address</label>
               <input
@@ -118,9 +138,10 @@ export default function SignupPage() {
             <div className="pt-2">
               <button
                 type="submit"
+                disabled={isWorking}
                 className="w-full rounded-lg bg-gradient-to-r from-[#ff40f3] to-[#21f6ff] px-4 py-3 font-semibold text-black shadow-[0_0_24px_rgba(255,64,243,0.55)] hover:shadow-[0_0_32px_rgba(33,246,255,0.5)] transition transform hover:scale-[1.02]"
               >
-                Create account
+                {isWorking ? 'Checking...' : 'Create account'}
               </button>
             </div>
           </form>

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-export default function TeamCard({ team }) {
+export default function TeamCard({ team, joinUrl }) {
   const supabase = createClient()
   const [memberCount, setMemberCount] = useState(0)
 
@@ -13,7 +13,7 @@ export default function TeamCard({ team }) {
   async function getMemberCount() {
     try {
       const { count } = await supabase
-        .from('team_members')
+        .from('profiles')
         .select('*', { count: 'exact', head: true })
         .eq('team_id', team.id)
 
@@ -34,13 +34,14 @@ export default function TeamCard({ team }) {
           <strong>Members:</strong> {memberCount}
         </p>
         <p>
-          <strong>Status:</strong>{' '}
-          <span className={`status ${team.submission_status || 'pending'}`}>
-            {team.submission_status || 'Pending'}
-          </span>
+          <strong>Team UUID:</strong> {team.id}
         </p>
       </div>
-      <button className="btn btn-primary">View Details</button>
+      {joinUrl ? (
+        <a className="btn btn-primary" href={joinUrl}>
+          Join Link
+        </a>
+      ) : null}
     </div>
   )
 }

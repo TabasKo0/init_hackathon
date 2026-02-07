@@ -2,12 +2,27 @@ import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
 
 import { createClient } from '@/lib/supabase/server'
-import { DUMMY_TEAMS, DUMMY_MEMBERS } from '@/lib/dashboardHelpers'
+import {
+  getUserProfile,
+  getTeamData,
+  getTeamMembers,
+  getHackathonStatus,
+} from '@/lib/dashboardHelpers'
 
-async function getDashboardData(user) {
-  const hackathonStatus = 'live'
-  const team = DUMMY_TEAMS[0]
-  const members = DUMMY_MEMBERS
+async function getDashboardData(supabase, user) {
+  const profile = await getUserProfile(supabase, user.id)
+  const hackathonMeta = await getHackathonStatus(supabase)
+  const hackathonStatus = hackathonMeta?.status || 'not_started'
+
+  let team = null
+  let members = []
+
+  if (profile?.team_id) {
+    team = await getTeamData(supabase, profile.team_id)
+    if (team) {
+      members = await getTeamMembers(supabase, team.id)
+    }
+  }
 
   return {
     user,
@@ -28,7 +43,7 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  const dashboardData = await getDashboardData(user)
+  const dashboardData = await getDashboardData(supabase, user)
 
   return <DashboardClient user={user} dashboardData={dashboardData} />
 }

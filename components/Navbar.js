@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-
+import { Link } from 'lucide-react'
 import { LiquidGlass } from '@liquidglass/react';
 
 
@@ -41,7 +41,7 @@ export default function Navbar() {
         
         {/* Logo/Brand */}
         <div className="nav-logo md:hidden">
-          <a href="/" className="text-2xl font-bold"></a>
+          <Link href="/" className="text-2xl font-bold"></Link>
         </div>
 
         {/* Hamburger Menu Button - Mobile */}
@@ -81,21 +81,14 @@ export default function Navbar() {
           >
             <ul className="nav-menu flex gap-6 text-xl p-3">
               <li>
-                <a 
+                <Link 
                   href="/" 
                   className={isActive('/') ? 'active' : ''}
                 >
                   Home
-                </a>
+                </Link>
               </li>
-              <li>
-                <a 
-                  href="/info" 
-                  className={isActive('/info') ? 'active' : ''}
-                >
-                  Info
-                </a>
-              </li>
+             
               <li>
                 <a 
                   href="/updates" 
@@ -104,8 +97,18 @@ export default function Navbar() {
                   Updates
                 </a>
               </li>
+               
               
-              {user ? (
+              {/* 
+              <li>
+                <a 
+                  href="/info" 
+                  className={isActive('/info') ? 'active' : ''}
+                >
+                  Info
+                </a>
+              </li>
+              user ? (
                 <li>
                   <a 
                     href="/dashboard" 
@@ -133,7 +136,7 @@ export default function Navbar() {
                     </a>
                   </li>
                 </>
-              )}
+              )*/}
             </ul>
           </LiquidGlass>
         </div>
@@ -156,13 +159,13 @@ export default function Navbar() {
           >
             <ul className="flex flex-col gap-6 text-xl p-8 mt-16">
               <li>
-                <a 
+                <Link 
                   href="/" 
                   className={`block ${isActive('/') ? 'active text-purple-400' : 'text-white'}`}
                   onClick={closeMenu}
                 >
                   Home
-                </a>
+                </Link>
               </li>
               <li>
                 <a 

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Canvas } from '@react-three/fiber'
-import { FloatingIcosahedron } from '@/components/3D/FloatingModel'
 import { AmbientParticles } from '@/components/3D/ParticleScene'
 import { Lock } from 'lucide-react'
 
@@ -16,7 +15,6 @@ export default function TracksClient({ user, tracks, selectedTrack, isSelectionE
       <div className="fixed inset-0 -z-10 h-full w-full opacity-25 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 6] }}>
           <AmbientParticles />
-          <FloatingIcosahedron scale={2} speed={2} />
         </Canvas>
       </div>
 
