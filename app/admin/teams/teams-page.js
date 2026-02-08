@@ -17,7 +17,7 @@ export default function TeamsPage({ user }) {
   async function getTeams() {
     try {
       setLoading(true)
-      let query = supabase.from('profiles').select('*')
+      let query = supabase.from('teams').select('*')
 
       if (filterTrack !== 'all') {
         query = query.eq('track', filterTrack)
@@ -39,6 +39,8 @@ export default function TeamsPage({ user }) {
   const filteredTeams = teams.filter((team) =>
     team.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   if (loading) {
     return <div className="admin-page">Loading...</div>
@@ -83,7 +85,11 @@ export default function TeamsPage({ user }) {
             <p className="empty-message">No teams found</p>
           ) : (
             filteredTeams.map((team) => (
-              <TeamCard key={team.id} team={team} />
+              <TeamCard
+                key={team.id}
+                team={team}
+                joinUrl={`${baseUrl}/dashboard/team/join?teamId=${team.id}`}
+              />
             ))
           )}
         </div>

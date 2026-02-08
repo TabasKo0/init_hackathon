@@ -1,7 +1,35 @@
+"use client"
+
 import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 import { login } from './actions'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [isWorking, setIsWorking] = useState(false)
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const formData = new FormData(event.target)
+
+    try {
+      setIsWorking(true)
+      const result = await login(formData)
+      if (result?.error) {
+        toast.error(result.error)
+        return
+      }
+
+      router.push('/dashboard/account')
+    } catch (error) {
+      toast.error('Unable to sign in right now.')
+    } finally {
+      setIsWorking(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(255,64,243,0.16),transparent_34%),radial-gradient(circle_at_78%_8%,rgba(33,246,255,0.2),transparent_36%),radial-gradient(circle_at_50%_80%,rgba(10,8,28,0.4),transparent_48%),#040008] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -12,7 +40,7 @@ export default function LoginPage() {
             <p className="text-slate-600 dark:text-slate-400 mt-2">Access your Init account</p>
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-semibold text-slate-900 dark:text-white">Email address</label>
               <input
@@ -39,10 +67,11 @@ export default function LoginPage() {
 
             <div className="pt-2">
               <button
-                formAction={login}
+                type="submit"
+                disabled={isWorking}
                 className="w-full rounded-lg bg-gradient-to-r from-[#ff40f3] to-[#21f6ff] px-4 py-3 font-semibold text-black shadow-[0_0_24px_rgba(255,64,243,0.55)] hover:shadow-[0_0_32px_rgba(33,246,255,0.5)] transition transform hover:scale-[1.02]"
               >
-                Log in
+                {isWorking ? 'Signing in...' : 'Log in'}
               </button>
             </div>
           </form>

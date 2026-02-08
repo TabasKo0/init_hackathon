@@ -18,6 +18,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { LiquidGlass } from '@liquidglass/react';
+
 // --- 3D Components ---
 
 function Brain() {
@@ -74,6 +75,7 @@ function Scene() {
         count={100}
         scale={12}
         size={16}
+        //size={6}
         speed={1}
         opacity={1}
         color="#f5ff64"
@@ -453,7 +455,6 @@ export default function InitHackathon() {
           <ChevronDown className="w-6 h-6" />
         </div>
       </header>
-
       {/* Philosophy Section */}
       <section id="about" className="py-16 md:py-24 relative z-[1] bg-gradient-to-b from-transparent via-black/20 to-black/50 snap-start min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -465,7 +466,7 @@ export default function InitHackathon() {
                 <strong className="text-white ml-1">educational accelerator</strong>. 
               </p>
               <p className="text-gray-400 mb-8 text-base md:text-lg leading-relaxed">
-                We don't just tell you to build; we teach you how. With our mandatory "Zero to One" seminar, 
+                We don&apos;t just tell you to build; we teach you how. With our mandatory &quot;Zero to One&quot; seminar, 
                 even a student who has never written a backend line of code will deploy a full-stack app by the 24th hour.
               </p>
               <ul className="space-y-4 font-mono text-sm text-gray-300">
@@ -487,6 +488,16 @@ export default function InitHackathon() {
                     <pre className="font-mono text-xs md:text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
                       <Typewriter tokens={codeTokens} speed={18} />
                     </pre>
+                <pre className="font-mono text-xs md:text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
+                  <span className="text-fuchsia-400">const</span> <span className="text-blue-400">initHackathon</span> = <span className="text-yellow-300">async</span> () ={'>'} {'{'}{'\n'}
+                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">learn</span>(<span className="text-purple-400">'Full Stack'</span>);{'\n'}
+                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">build</span>(<span className="text-purple-400">'MVP'</span>);{'\n'}
+                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">deploy</span>();{'\n'}
+                  {'\n'}
+                  {'  '}<span className="text-gray-500">// Returns: A new career path</span>{'\n'}
+                  {'  '}<span className="text-fuchsia-400">return</span> <span className="text-purple-400">&quot;Builder&quot;</span>;{'\n'}
+                  {'}'};
+                </pre>
               </div>
             </div>
           </div>
