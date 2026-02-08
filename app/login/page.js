@@ -22,7 +22,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/account')
+      router.push('/dashboard/account')
     } catch (error) {
       toast.error('Unable to sign in right now.')
     } finally {

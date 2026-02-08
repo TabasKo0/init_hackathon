@@ -34,7 +34,7 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
 
       const { data } = await supabase
         .from('teams')
-        .select('id, name')
+        .select('id, name, team_members')
         .eq('id', teamIdState)
         .single()
 
@@ -62,6 +62,19 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
         .eq('id', user.id)
 
       if (profileError) throw profileError
+
+      const existingMembers = Array.isArray(teamState?.team_members)
+        ? teamState.team_members
+        : []
+
+      if (!existingMembers.includes(user.id)) {
+        const { error: membersError } = await supabase
+          .from('teams')
+          .update({ team_members: [...existingMembers, user.id] })
+          .eq('id', teamIdState)
+
+        if (membersError) throw membersError
+      }
 
       router.push('/dashboard/team')
     } catch (joinError) {

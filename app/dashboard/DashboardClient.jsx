@@ -28,9 +28,9 @@ export default function DashboardClient({ user, dashboardData }) {
         </Canvas>
       </div>
 
-      <div className="min-h-screen p-4 md:p-8 lg:p-12">
+      <div className="min-h-screen p-4 md:p-8 lg:p-12 ">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8  ml-12 md:ml-0">
           <p className="text-xs uppercase tracking-[0.2em] text-white mb-2">Welcome Back</p>
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] bg-clip-text text-transparent mb-2">
             Dashboard

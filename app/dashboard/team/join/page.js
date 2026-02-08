@@ -22,7 +22,7 @@ export default async function JoinTeamPage({ searchParams }) {
   if (teamId) {
     const { data } = await supabase
       .from('teams')
-      .select('id, name')
+      .select('id, name, team_members')
       .eq('id', teamId)
       .single()
 

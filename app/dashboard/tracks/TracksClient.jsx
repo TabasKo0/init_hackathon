@@ -20,10 +20,8 @@ export default function TracksClient({ user, tracks, selectedTrack, isSelectionE
 
       <div className="min-h-screen p-4 md:p-8 lg:p-12">
         {/* Header */}
-        <div className="mb-8">
-          <Link href="/dashboard" className="text-[#23e6ff] hover:text-[#00ffff] text-sm font-semibold mb-4 inline-flex items-center gap-2">
-            ← Back
-          </Link>
+        <div className="mb-8  ml-12 md:ml-0">
+          
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] bg-clip-text text-transparent mb-2">
             Select Your Track
           </h1>
@@ -65,24 +63,7 @@ export default function TracksClient({ user, tracks, selectedTrack, isSelectionE
               {/* Description */}
               <p className="text-sm text-slate-300 mb-6 line-clamp-3">{track.description}</p>
 
-              {/* Selection Button */}
-              {!selectedTrack && isSelectionEnabled ? (
-                <button
-                  className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] text-white font-bold hover:shadow-[0_0_24px_rgba(255,47,211,0.55),0_0_48px_rgba(35,230,255,0.35)] transition-all group-hover:scale-105"
-                >
-                  Select This Track
-                </button>
-              ) : selectedTrack === track.id ? (
-                <div className="w-full px-4 py-3 rounded-lg bg-[#12f7c0]/20 border border-[#12f7c0]/50 text-[#12f7c0] font-bold text-center flex items-center justify-center gap-2">
-                  <span>✓</span>
-                  <span>Selected</span>
-                </div>
-              ) : (
-                <div className="w-full px-4 py-3 rounded-lg bg-slate-700/30 border border-slate-600/50 text-slate-400 font-bold text-center flex items-center justify-center gap-2 cursor-not-allowed">
-                  <Lock size={16} />
-                  <span>Locked</span>
-                </div>
-              )}
+              
             </div>
           ))}
         </div>

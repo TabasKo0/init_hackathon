@@ -1,15 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Canvas } from '@react-three/fiber'
 import { AmbientParticles } from '@/components/3D/ParticleScene'
-import { LogOut } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { createClient } from '@/lib/supabase/client'
 
 export default function TeamClient({ user, team, members, isLeader }) {
-  if (!user) return null
-
   const supabase = createClient()
   const [teamState, setTeamState] = useState(team)
   const [membersState, setMembersState] = useState(members || [])
@@ -33,6 +30,8 @@ export default function TeamClient({ user, team, members, isLeader }) {
       setJoinUrl(`${window.location.origin}/dashboard/team/join?teamId=${teamState.id}`)
     }
   }, [hasTeam, teamState?.id])
+
+  if (!user) return null
 
   async function fetchMembers(teamId) {
     const { data, error } = await supabase
@@ -58,7 +57,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
       setIsWorking(true)
       const { data: createdTeam, error: createError } = await supabase
         .from('teams')
-        .insert({ name: trimmedName, owner_id: user.id })
+        .insert({ name: trimmedName, owner_id: user.id, team_members: [user.id] })
         .select('*')
         .single()
 
@@ -77,7 +76,11 @@ export default function TeamClient({ user, team, members, isLeader }) {
       setLeaderState(true)
       setTeamName('')
     } catch (error) {
-      setFormError(error.message || 'Unable to create team right now.')
+      const message = error?.message?.toLowerCase()?.includes('duplicate')
+        ? 'Team name taken or already exists'
+        : error.message || 'Unable to create team right now.'
+      toast.error(message)
+      setFormError(message)
     } finally {
       setIsWorking(false)
     }
@@ -112,6 +115,19 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
       if (profileError) throw profileError
 
+      const existingMembers = Array.isArray(foundTeam.team_members)
+        ? foundTeam.team_members
+        : []
+
+      if (!existingMembers.includes(user.id)) {
+        const { error: membersError } = await supabase
+          .from('teams')
+          .update({ team_members: [...existingMembers, user.id] })
+          .eq('id', foundTeam.id)
+
+        if (membersError) throw membersError
+      }
+
       const nextMembers = await fetchMembers(foundTeam.id)
       setTeamState(foundTeam)
       setMembersState(nextMembers)
@@ -133,16 +149,15 @@ export default function TeamClient({ user, team, members, isLeader }) {
         </Canvas>
       </div>
 
-      <div className="min-h-screen p-4 md:p-8 lg:p-12">
+      <div className="min-h-screen  p-4 md:p-8 lg:p-12">
         {/* Header */}
-        <div className="mb-8">
-          <Link href="/dashboard" className="text-[#23e6ff] hover:text-[#00ffff] text-sm font-semibold mb-4 inline-flex items-center gap-2">
-            ← Back
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] bg-clip-text text-transparent mb-2">
+        <div className="flex flex-row justify-between  items-start mb-8 ml-12 md:ml-0">
+          
+          <div><h1 className="text-3xl  md:text-4xl font-bold bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] bg-clip-text text-transparent mb-2">
             Team Management
           </h1>
-          <p className="text-slate-400">Manage your team details and members</p>
+          <p className="text-slate-400">Manage your team details and members</p></div>
+          
         </div>
 
         {hasTeam && leaderState && (
@@ -156,103 +171,102 @@ export default function TeamClient({ user, team, members, isLeader }) {
               </div>
             </div>
           )}
-        <div className="flex flex-row gap-6 mt-6  ">
-          {/* Team Details */}
-            <div className="card glass flex-grow-1">
-            <h2 className="text-xl font-bold text-white mb-6">Team Members ({membersState.length})</h2>
+        {!hasTeam ? (
+          <div className="card glass mt-6">
+            <h2 className="text-xl font-bold text-white mb-6">Get Started</h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleCreateTeam} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-white">Create a team</p>
+                  <input
+                    type="text"
+                    value={teamName}
+                    onChange={(event) => setTeamName(event.target.value)}
+                    placeholder="Team name"
+                    className="w-full rounded-md bg-black/50 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#23e6ff]/60"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isWorking}
+                    className="w-full rounded-md bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] py-2 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    {isWorking ? 'Creating...' : 'Create Team'}
+                  </button>
+                </form>
 
-            <div className="space-y-3">
-              {membersState.length === 0 ? (
-                <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-slate-400">
-                  No members yet. Ask teammates to join with the team UUID.
+                <form onSubmit={handleJoinTeam} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-white">Join a team</p>
+                  <input
+                    type="text"
+                    value={teamIdInput}
+                    onChange={(event) => setTeamIdInput(event.target.value)}
+                    placeholder="Team UUID"
+                    className="w-full rounded-md bg-black/50 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#ff2fd3]/60"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isWorking}
+                    className="w-full rounded-md border border-[#23e6ff] text-[#23e6ff] py-2 text-sm font-bold hover:bg-[#23e6ff]/10 disabled:opacity-60"
+                  >
+                    {isWorking ? 'Joining...' : 'Join Team'}
+                  </button>
+                </form>
+              </div>
+
+              {formError ? (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
+                  {formError}
                 </div>
-              ) : (
-                membersState.map((member) => {
-                  const displayName = member.full_name || member.username || 'Member'
-                  const initial = displayName.charAt(0).toUpperCase()
-
-                  return (
-                    <div key={member.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-white/10 hover:border-[#ff2fd3]/50 transition-all group hover:bg-white/10">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff2fd3] to-[#23e6ff] flex items-center justify-center text-white font-bold text-sm">
-                        {initial}
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-white">{displayName}</p>
-                          {member.team_role === 'leader' && (
-                            <span className="px-2 py-0.5 rounded-full bg-[#12f7c0]/20 border border-[#12f7c0]/50 text-xs font-bold text-[#12f7c0]">Leader</span>
-                          )}
-                        </div>
-                        {member.username ? (
-                          <p className="text-xs text-slate-400">@{member.username}</p>
-                        ) : null}
-                      </div>
-
-                      {member.team_role === 'member' && leaderState && (
-                        <button className="opacity-0 group-hover:opacity-100 px-3 py-1 rounded text-xs font-semibold text-[#ff5c8a] hover:bg-[#ff5c8a]/10 border border-[#ff5c8a]/50 transition-all">
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  )
-                })
-              )}
+              ) : null}
             </div>
           </div>
-          {/* Members Section */}
-        {hasTeam && (
-          <div className="card glass flex-grow-1">
-              <h2 className="text-xl font-bold text-white mb-6">Team Information</h2>
+        ) : (
+          <div className="flex flex-col md:flex-row gap-6 mt-6">
+            <div className="card glass flex-grow-1">
+              <h2 className="text-xl font-bold text-white mb-6">Team Members ({membersState.length})</h2>
 
-              {!hasTeam ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <form onSubmit={handleCreateTeam} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
-                      <p className="text-sm font-semibold text-white">Create a team</p>
-                      <input
-                        type="text"
-                        value={teamName}
-                        onChange={(event) => setTeamName(event.target.value)}
-                        placeholder="Team name"
-                        className="w-full rounded-md bg-black/50 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#23e6ff]/60"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isWorking}
-                        className="w-full rounded-md bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] py-2 text-sm font-bold text-white disabled:opacity-60"
-                      >
-                        {isWorking ? 'Creating...' : 'Create Team'}
-                      </button>
-                    </form>
-
-                    <form onSubmit={handleJoinTeam} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
-                      <p className="text-sm font-semibold text-white">Join a team</p>
-                      <input
-                        type="text"
-                        value={teamIdInput}
-                        onChange={(event) => setTeamIdInput(event.target.value)}
-                        placeholder="Team UUID"
-                        className="w-full rounded-md bg-black/50 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#ff2fd3]/60"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isWorking}
-                        className="w-full rounded-md border border-[#23e6ff] text-[#23e6ff] py-2 text-sm font-bold hover:bg-[#23e6ff]/10 disabled:opacity-60"
-                      >
-                        {isWorking ? 'Joining...' : 'Join Team'}
-                      </button>
-                    </form>
+              <div className="space-y-3">
+                {membersState.length === 0 ? (
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-slate-400">
+                    No members yet. Ask teammates to join with the team UUID.
                   </div>
+                ) : (
+                  membersState.map((member) => {
+                    const displayName = member.full_name || member.username || 'Member'
+                    const initial = displayName.charAt(0).toUpperCase()
 
-                  {formError ? (
-                    <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
-                      {formError}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="space-y-4 mb-8">
+                    return (
+                      <div key={member.id} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-white/10 hover:border-[#ff2fd3]/50 transition-all group hover:bg-white/10">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff2fd3] to-[#23e6ff] flex items-center justify-center text-white font-bold text-sm">
+                          {initial}
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-white">{displayName}</p>
+                            {member.team_role === 'leader' && (
+                              <span className="px-2 py-0.5 rounded-full bg-[#12f7c0]/20 border border-[#12f7c0]/50 text-xs font-bold text-[#12f7c0]">Leader</span>
+                            )}
+                          </div>
+                          {member.username ? (
+                            <p className="text-xs text-slate-400">@{member.username}</p>
+                          ) : null}
+                        </div>
+
+                        {member.team_role === 'member' && leaderState && (
+                          <button className="opacity-0 group-hover:opacity-100 px-3 py-1 rounded text-xs font-semibold text-[#ff5c8a] hover:bg-[#ff5c8a]/10 border border-[#ff5c8a]/50 transition-all">
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+            <div className="card glass flex-grow-1">
+              <h2 className="text-xl font-bold text-white mb-6">Team Information</h2>
+              <div className="space-y-4 mb-8">
                   <div>
                     <label className="text-xs uppercase tracking-[0.15em] text-slate-500 block mb-2">Team Name</label>
                     <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-white font-semibold">
@@ -311,17 +325,9 @@ export default function TeamClient({ user, team, members, isLeader }) {
                     </div>
                   ) : null}
                 </div>
-              )}
-
-              
+              </div>
             </div>
-        )}
-        </div>
-        
-
-          
-      
-        
+        )} 
       </div>
     </DashboardLayout>
   )

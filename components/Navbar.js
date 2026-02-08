@@ -189,7 +189,7 @@ export default function Navbar() {
               {user ? (
                 <li>
                   <a 
-                    href="/account" 
+                    href="/dashboard/account" 
                     className="block btn-dashboard text-white bg-purple-600 px-4 py-2 rounded-lg text-center"
                     onClick={closeMenu}
                   >

@@ -13,13 +13,14 @@ export default function DashboardLayout({ user, children }) {
     { href: '/dashboard/team', label: 'Team', icon: '' },
     { href: '/dashboard/tracks', label: 'Tracks', icon: '' },
     { href: '/dashboard/submission', label: 'Submission', icon: '' },
-    { href: '/updates', label: 'Updates', icon: ' ' }
+    { href: '/updates', label: 'Updates', icon: ' ' },
+    { href: '/dashboard/account', label: 'account', icon: ' ' }
   ]
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(255,64,243,0.16),transparent_34%),radial-gradient(circle_at_78%_8%,rgba(33,246,255,0.2),transparent_36%),radial-gradient(circle_at_50%_80%,rgba(10,8,28,0.4),transparent_48%),#040008]">
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-4 left-3 z-50">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 hover:border-[#ff2fd3]/50 transition-all"
