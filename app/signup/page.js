@@ -1,11 +1,13 @@
 'use client'
-
+import Router, { useRouter } from "next/navigation"
 import Link from 'next/link'
 import { signup } from '../login/actions'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 export default function SignupPage() {
+  //remove
+  const router = useRouter();
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [email, setEmail] = useState('')
   const [isWorking, setIsWorking] = useState(false)
@@ -49,44 +51,15 @@ export default function SignupPage() {
         toast.error(result.error)
         return
       }
-
-      setShowConfirmation(true)
+      router.push('/dashboard');
+     // setShowConfirmation(true)
     } catch (err) {
       toast.error('An error occurred. Please try again.')
     } finally {
       setIsWorking(false)
     }
   }
-
-  if (showConfirmation) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(255,64,243,0.16),transparent_34%),radial-gradient(circle_at_78%_8%,rgba(33,246,255,0.2),transparent_36%),radial-gradient(circle_at_50%_80%,rgba(10,8,28,0.4),transparent_48%),#040008] flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="card glass shadow-xl">
-            <div className="text-center">
-              <div className="text-5xl mb-4">✓</div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Account Created!</h1>
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                We've sent a confirmation email to <span className="font-semibold text-[#21f6ff]">{email}</span>
-              </p>
-              <p className="text-slate-600 dark:text-slate-400 mb-8">
-                Kindly authenticate your email from inbox to complete signup.
-              </p>
-
-              <div className="space-y-3">
-                <Link href="/" className="block w-full rounded-lg bg-gradient-to-r from-[#ff40f3] to-[#21f6ff] px-4 py-3 font-semibold text-black shadow-[0_0_24px_rgba(255,64,243,0.55)] hover:shadow-[0_0_32px_rgba(33,246,255,0.5)] transition transform hover:scale-[1.02]">
-                  Back to Home
-                </Link>
-                <Link href="/login" className="block w-full rounded-lg border-2 border-[#21f6ff] px-4 py-3 font-semibold text-[#21b8ff] dark:text-[#21f6ff] hover:bg-[#21f6ff10] dark:hover:bg-[#21f6ff12] transition">
-                  Go to Login
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+ 
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(255,64,243,0.16),transparent_34%),radial-gradient(circle_at_78%_8%,rgba(33,246,255,0.2),transparent_36%),radial-gradient(circle_at_50%_80%,rgba(10,8,28,0.4),transparent_48%),#040008] flex items-center justify-center px-4">

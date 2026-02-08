@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Link } from 'lucide-react'
+import Link from 'next/link'
 import { LiquidGlass } from '@liquidglass/react';
 
 
@@ -26,7 +26,7 @@ export default function Navbar() {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  })
 
   const isActive = (path) => pathname === path
 

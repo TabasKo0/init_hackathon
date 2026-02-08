@@ -108,16 +108,21 @@ export default function TeamClient({ user, team, members, isLeader }) {
         throw teamError || new Error('Team not found.')
       }
 
+      const existingMembers = Array.isArray(foundTeam.team_members)
+        ? foundTeam.team_members
+        : []
+
+      if (existingMembers.length >= 4) {
+        toast.error('Team is full (4 members max).')
+        return
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ team_id: foundTeam.id, team_role: 'member' })
         .eq('id', user.id)
 
       if (profileError) throw profileError
-
-      const existingMembers = Array.isArray(foundTeam.team_members)
-        ? foundTeam.team_members
-        : []
 
       if (!existingMembers.includes(user.id)) {
         const { error: membersError } = await supabase
