@@ -12,6 +12,7 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
   const [teamState, setTeamState] = useState(team)
   const [teamIdState, setTeamIdState] = useState(teamId)
   const [isWorking, setIsWorking] = useState(false)
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -31,15 +32,29 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
 
     async function loadTeam() {
       if (!teamIdState || teamState) return
+      setIsLoadingTeam(true)
 
-      const { data } = await supabase
-        .from('teams')
-        .select('id, name, team_members')
-        .eq('id', teamIdState)
-        .single()
+      try {
+        const { data, error: teamError } = await supabase
+          .from('teams')
+          .select('id, name, team_members')
+          .eq('id', teamIdState)
+          .single()
 
-      if (isMounted) {
-        setTeamState(data || null)
+        if (teamError) throw teamError
+
+        if (isMounted) {
+          setTeamState(data || null)
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setTeamState(null)
+          setError(loadError.message || 'Unable to load team details.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingTeam(false)
+        }
       }
     }
 
@@ -56,6 +71,28 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
 
     try {
       setIsWorking(true)
+      const checkResponse = await fetch('/api/team', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId: teamIdState }),
+      })
+
+      if (!checkResponse.ok) {
+        const payload = await checkResponse.json().catch(() => null)
+        const message = payload?.error || 'Unable to check team size.'
+        setError(message)
+        return
+      }
+
+      const checkPayload = await checkResponse.json()
+      if (!checkPayload?.ok) {
+        const limit = Number.isFinite(checkPayload?.limit) ? checkPayload.limit : 4
+        setError(`Team is full (${limit} members max).`)
+        return
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ team_id: teamIdState, team_role: 'member' })
@@ -75,6 +112,14 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
 
         if (membersError) throw membersError
       }
+
+      await fetch('/api/team', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId: teamIdState, action: 'sync', memberId: user.id }),
+      })
 
       router.push('/dashboard/team')
     } catch (joinError) {
@@ -98,7 +143,7 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
             </div>
           ) : !teamState ? (
             <div className="card glass p-6 text-slate-300">
-              Team not found. Please check the UUID.
+              {isLoadingTeam ? 'Loading team details...' : 'Team not found. Please check the UUID.'}
             </div>
           ) : (
             <div className="card glass p-6 space-y-4">
@@ -115,7 +160,7 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
               ) : (
                 <button
                   onClick={handleJoin}
-                  disabled={isWorking}
+                  disabled={isWorking || isLoadingTeam}
                   className="w-full rounded-md bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] py-3 text-sm font-bold text-white disabled:opacity-60"
                 >
                   {isWorking ? 'Joining...' : 'Join this team'}

@@ -15,7 +15,8 @@ export default async function JoinTeamPage({ searchParams }) {
     redirect('/login')
   }
 
-  const rawTeamId = searchParams?.teamId || searchParams?.team || searchParams?.id
+  const resolvedSearchParams = await searchParams
+  const rawTeamId = resolvedSearchParams?.teamId || resolvedSearchParams?.team || resolvedSearchParams?.id
   const teamId = Array.isArray(rawTeamId) ? rawTeamId[0] : rawTeamId || ''
   let team = null
 

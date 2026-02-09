@@ -38,10 +38,22 @@ export async function signup(formData) {
     password: formData.get('password') ,
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const { data: signupData, error } = await supabase.auth.signUp(data)
 
   if (error) {
     return { error: error.message }
+  }
+
+  const userId = signupData?.user?.id
+  const email = signupData?.user?.email || data.email
+  if (userId && email) {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({ id: userId, email }, { onConflict: 'id' })
+
+    if (profileError) {
+      return { error: 'Unable to save profile information.' }
+    }
   }
 
   revalidatePath('/', 'layout')
