@@ -80,13 +80,13 @@ export default function DashboardClient({ user, dashboardData }) {
 
           {/* Track Status */}
           <div className="card glass">
+            <Link href='/dashboard/tracks'>
             <h3 className="text-lg font-bold text-white mb-4">Your Track</h3>
             <div className="p-4 rounded-lg bg-gradient-to-br from-[#ff2fd3]/20 to-[#23e6ff]/20 border border-[#ff2fd3]/50 text-center">
-              <p className="text-xs text-slate-400 mb-2">Not Selected Yet</p>
-              <Link href="/dashboard/tracks" className="inline-flex items-center justify-center w-full px-3 py-2 rounded-lg bg-[#ff2fd3] text-white text-sm font-bold hover:bg-[#c400a9] transition-colors mt-3">
-                Select Track
-              </Link>
+              <p className="text-xs text-slate-400 mb-2">Not Assigned Yet</p>
+              
             </div>
+            </Link>
           </div>
         </div>
 

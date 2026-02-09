@@ -12,7 +12,6 @@ export default function DashboardLayout({ user, children }) {
     { href: '/dashboard', label: 'Dashboard', icon: '' },
     { href: '/dashboard/team', label: 'Team', icon: '' },
     { href: '/dashboard/tracks', label: 'Tracks', icon: '' },
-    { href: '/dashboard/submission', label: 'Submission', icon: '' },
     { href: '/updates', label: 'Updates', icon: ' ' },
     { href: '/dashboard/account', label: 'account', icon: ' ' }
   ]

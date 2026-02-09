@@ -75,6 +75,14 @@ export default function TeamClient({ user, team, members, isLeader }) {
       setMembersState(nextMembers)
       setLeaderState(true)
       setTeamName('')
+
+      await fetch('/api/team', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId: createdTeam.id, action: 'sync', memberId: user.id }),
+      })
     } catch (error) {
       const message = error?.message?.toLowerCase()?.includes('duplicate')
         ? 'Team name taken or already exists'
@@ -98,6 +106,30 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
     try {
       setIsWorking(true)
+
+      const checkResponse = await fetch('/api/team', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId: trimmedTeamId }),
+      })
+
+      if (!checkResponse.ok) {
+        const payload = await checkResponse.json().catch(() => null)
+        const message = payload?.error || 'Unable to check team size.'
+        toast.error(message)
+        setFormError(message)
+        return
+      }
+
+      const checkPayload = await checkResponse.json()
+      if (!checkPayload?.ok) {
+        const limit = Number.isFinite(checkPayload?.limit) ? checkPayload.limit : 4
+        toast.error(`Team is full (${limit} members max).`)
+        return
+      }
+
       const { data: foundTeam, error: teamError } = await supabase
         .from('teams')
         .select('*')
@@ -111,11 +143,6 @@ export default function TeamClient({ user, team, members, isLeader }) {
       const existingMembers = Array.isArray(foundTeam.team_members)
         ? foundTeam.team_members
         : []
-
-      if (existingMembers.length >= 4) {
-        toast.error('Team is full (4 members max).')
-        return
-      }
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -132,6 +159,14 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
         if (membersError) throw membersError
       }
+
+      await fetch('/api/team', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamId: foundTeam.id, action: 'sync', memberId: user.id }),
+      })
 
       const nextMembers = await fetchMembers(foundTeam.id)
       setTeamState(foundTeam)
@@ -258,11 +293,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
                           ) : null}
                         </div>
 
-                        {member.team_role === 'member' && leaderState && (
-                          <button className="opacity-0 group-hover:opacity-100 px-3 py-1 rounded text-xs font-semibold text-[#ff5c8a] hover:bg-[#ff5c8a]/10 border border-[#ff5c8a]/50 transition-all">
-                            Remove
-                          </button>
-                        )}
+                        
                       </div>
                     )
                   })
