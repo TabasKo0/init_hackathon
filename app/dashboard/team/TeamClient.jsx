@@ -382,7 +382,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
                     <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-white font-semibold">
                       {membersState.length} / 6
                     </div>
-                      <p className='mt-4 break-words'>Note: If your team size is less than 4, your team might be merged with another team.
+                      <p className='mt-4 break-words'>Note: If your team size is less than 3, your team might be merged with another team.
                       </p>
                   </div>
 
