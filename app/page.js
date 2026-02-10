@@ -451,7 +451,10 @@ export default function InitHackathon() {
           </div></a>
         </div>
         
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
+        <div style={{"z-index" : 100}} onClick={() => {
+            window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
+          }} className="absolute bottom-20 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
+          
           <ChevronDown className="w-6 h-6" />
         </div>
       </header>
@@ -488,16 +491,7 @@ export default function InitHackathon() {
                     <pre className="font-mono text-xs md:text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
                       <Typewriter tokens={codeTokens} speed={18} />
                     </pre>
-                <pre className="font-mono text-xs md:text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
-                  <span className="text-fuchsia-400">const</span> <span className="text-blue-400">initHackathon</span> = <span className="text-yellow-300">async</span> () ={'>'} {'{'}{'\n'}
-                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">learn</span>(<span className="text-purple-400">'Full Stack'</span>);{'\n'}
-                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">build</span>(<span className="text-purple-400">'MVP'</span>);{'\n'}
-                  {'  '}<span className="text-fuchsia-400">await</span> <span className="text-blue-400">deploy</span>();{'\n'}
-                  {'\n'}
-                  {'  '}<span className="text-gray-500">// Returns: A new career path</span>{'\n'}
-                  {'  '}<span className="text-fuchsia-400">return</span> <span className="text-purple-400">&quot;Builder&quot;</span>;{'\n'}
-                  {'}'};
-                </pre>
+               
               </div>
             </div>
           </div>

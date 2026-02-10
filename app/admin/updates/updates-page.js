@@ -44,7 +44,6 @@ export default function UpdatesPage({ user }) {
             title,
             content,
             is_important: isImportant,
-            updated_at: new Date().toISOString(),
           })
           .eq('id', editingId)
 

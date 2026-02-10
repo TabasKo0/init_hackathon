@@ -21,6 +21,16 @@ async function getDashboardData(supabase, user) {
     team = await getTeamData(supabase, profile.team_id)
     if (team) {
       members = await getTeamMembers(supabase, team.id)
+      // fetch track metadata for the team's assigned track (if any)
+      if (team.track) {
+        try {
+          const { data: track } = await supabase.from('tracks').select('*').eq('id', team.track).single()
+          if (track) team.track_info = track
+        } catch (err) {
+          // ignore track fetch errors
+          console.warn('Failed to fetch track info for dashboard:', err)
+        }
+      }
     }
   }
 

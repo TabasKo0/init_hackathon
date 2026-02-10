@@ -49,19 +49,16 @@ export default function UpdateCard({ update_props }) {
                 </p>
                 
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800">
-                    <p className="text-gray-500 text-xs flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${is_important ? 'bg-pink-500' : 'bg-purple-500'}`}></span>
-                        Created by: <span className={`${accentColor} font-medium`}>{created_by}</span>
-                    </p>
+                  
                     
                     {/* might add later */}
-                    {/* {is_important && (
+                    {is_important && (
                         <div className={`border ${borderAccent} ${bgAccent} px-3 py-1 rounded-full`}>
                             <span className={`text-xs font-semibold ${accentColor}`}>
                                 IMPORTANT
                             </span>
                         </div>
-                    )} */}
+                    )} 
                 </div>
             </div>
         </>

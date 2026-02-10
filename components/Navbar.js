@@ -107,8 +107,8 @@ export default function Navbar() {
                 >
                   Info
                 </a>
-              </li>
-              user ? (
+              </li>*/}
+              {user ? (
                 <li>
                   <a 
                     href="/dashboard" 
@@ -136,7 +136,7 @@ export default function Navbar() {
                     </a>
                   </li>
                 </>
-              )*/}
+              )}
             </ul>
           </LiquidGlass>
         </div>

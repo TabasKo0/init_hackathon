@@ -23,7 +23,7 @@ export default function TeamsPage({ user }) {
         query = query.eq('track', filterTrack)
       }
 
-      const { data, error } = await query.order('updated_at', {
+      const { data, error } = await query.order('created_at', {
         ascending: false,
       })
 

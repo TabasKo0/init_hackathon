@@ -4,7 +4,7 @@ import crypto from 'crypto'
 
 export const runtime = 'nodejs'
 
-const TEAM_MEMBER_LIMIT = 4
+const TEAM_MEMBER_LIMIT = 6
 const DEFAULT_TEAMS_RANGE = 'Teams!A:C'
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'

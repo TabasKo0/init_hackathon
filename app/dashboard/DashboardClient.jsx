@@ -80,13 +80,22 @@ export default function DashboardClient({ user, dashboardData }) {
 
           {/* Track Status */}
           <div className="card glass">
-            <Link href='/dashboard/tracks'>
             <h3 className="text-lg font-bold text-white mb-4">Your Track</h3>
-            <div className="p-4 rounded-lg bg-gradient-to-br from-[#ff2fd3]/20 to-[#23e6ff]/20 border border-[#ff2fd3]/50 text-center">
-              <p className="text-xs text-slate-400 mb-2">Not Assigned Yet</p>
-              
-            </div>
-            </Link>
+            {dashboardData.team?.track_info ? (
+              <div className="p-4 rounded-lg bg-gradient-to-br from-[#ff2fd3]/20 to-[#23e6ff]/20 border border-[#ff2fd3]/50 text-center">
+                <p className="text-sm font-semibold text-white mb-1">{dashboardData.team.track_info.name || dashboardData.team.track_info.title || dashboardData.team.track_info.slug || dashboardData.team.track}</p>
+                {dashboardData.team.track_info.emoji ? (
+                  <div className="text-3xl">{dashboardData.team.track_info.emoji}</div>
+                ) : null}
+                {dashboardData.team.track_info.description ? (
+                  <p className="text-xs text-slate-400 mt-2">{dashboardData.team.track_info.description}</p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-gradient-to-br from-[#ff2fd3]/20 to-[#23e6ff]/20 border border-[#ff2fd3]/50 text-center">
+                <p className="text-xs text-slate-400 mb-2">Not Assigned Yet</p>
+              </div>
+            )}
           </div>
         </div>
 

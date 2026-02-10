@@ -14,7 +14,6 @@ export default function UpdatesPage() {
       .from('updates')
       .select('*')
       .order('is_important', { ascending: false })
-      .order('created_at', { ascending: false });
     if (!error) setUpdates(data);
   }
 

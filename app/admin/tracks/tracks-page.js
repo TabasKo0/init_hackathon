@@ -7,6 +7,7 @@ export default function TracksPage({ user }) {
   const supabase = createClient()
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [distributing, setDistributing] = useState(false)
 
   const defaultTracks = [
     { id: 'web', name: 'Web Development', enabled: true },
@@ -75,6 +76,37 @@ export default function TracksPage({ user }) {
       <div className="admin-header">
         <h1>🎯 Track Management</h1>
         <p className="admin-subtitle">Enable/disable tracks and manage team distribution</p>
+        <div className="admin-actions" style={{ marginTop: 12 }}>
+          <button
+            className="btn btn-primary"
+            disabled={distributing}
+            onClick={async () => {
+              const proceed = confirm('Proceed to distribute teams to enabled tracks?')
+              if (!proceed) return
+              const assignOnly = confirm('Assign only unassigned teams?\nOK = only unassigned teams, Cancel = reassign all teams')
+              const reassign = assignOnly
+              try {
+                setDistributing(true)
+                const res = await fetch('/api/admin/tracks/distribute', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ reassign }),
+                })
+                const json = await res.json()
+                if (!res.ok) throw new Error(json?.error || 'Distribution failed')
+                alert(`Assigned ${json.updated || 0} teams`)
+                getTracks()
+              } catch (err) {
+                console.error('Distribution error:', err)
+                alert('Error distributing teams: ' + (err.message || err))
+              } finally {
+                setDistributing(false)
+              }
+            }}
+          >
+            {distributing ? 'Distributing…' : 'Auto Distribute Teams'}
+          </button>
+        </div>
       </div>
 
       <div className="admin-content">

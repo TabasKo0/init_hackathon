@@ -7,7 +7,7 @@ export default function AdminStats() {
   const [stats, setStats] = useState({
     totalTeams: 0,
     trackDistribution: {},
-    totalSubmissions: 0,
+   
   })
   const [loading, setLoading] = useState(true)
 
@@ -34,15 +34,10 @@ export default function AdminStats() {
         distribution[item.track] = (distribution[item.track] || 0) + 1
       })
 
-      // Get total submissions
-      const { count: submissionCount } = await supabase
-        .from('submissions')
-        .select('*', { count: 'exact', head: true })
-
+   
       setStats({
         totalTeams: teamCount || 0,
         trackDistribution: distribution,
-        totalSubmissions: submissionCount || 0,
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -62,10 +57,7 @@ export default function AdminStats() {
         <div className="stat-number">{stats.totalTeams}</div>
       </div>
 
-      <div className="stat-card">
-        <h3>Submissions</h3>
-        <div className="stat-number">{stats.totalSubmissions}</div>
-      </div>
+      
 
       <div className="stat-card">
         <h3>Track Distribution</h3>
