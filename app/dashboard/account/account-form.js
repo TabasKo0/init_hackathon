@@ -133,7 +133,7 @@ export default function AccountForm({ user }) {
                 {loading ? 'Loading ...' : 'Save changes'}
               </button>
               <form action="/auth/signout" method="post">
-                <button className="w-full rounded-lg border-2 border-[#21f6ff] px-4 py-3 font-semibold text-[#21b8ff] dark:text-[#21f6ff] hover:shadow-[0_0_18px_rgba(33,246,255,0.45)] transition neon-link" type="submit">
+                <button className="w-full justify-center rounded-lg border-2 border-[#21f6ff] px-4 py-3 font-semibold text-[#21b8ff] dark:text-[#21f6ff] hover:shadow-[0_0_18px_rgba(33,246,255,0.45)] transition neon-link" type="submit">
                   Sign out
                 </button>
               </form>
