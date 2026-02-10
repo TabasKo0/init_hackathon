@@ -15,6 +15,20 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
   const [isLoadingTeam, setIsLoadingTeam] = useState(false)
   const [error, setError] = useState('')
 
+  function normalizeMemberEmails(rawEmails) {
+    if (Array.isArray(rawEmails)) return rawEmails
+    if (typeof rawEmails === 'string') {
+      try {
+        const parsed = JSON.parse(rawEmails)
+        return Array.isArray(parsed) ? parsed : null
+      } catch {
+        return null
+      }
+    }
+    if (rawEmails && Array.isArray(rawEmails.emails)) return rawEmails.emails
+    return null
+  }
+
   useEffect(() => {
     if (teamId) {
       setTeamIdState(teamId)
@@ -37,7 +51,7 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
       try {
         const { data, error: teamError } = await supabase
           .from('teams')
-          .select('id, name, team_members')
+          .select('id, name, team_members, member_emails')
           .eq('id', teamIdState)
           .single()
 
@@ -100,14 +114,46 @@ export default function JoinClient({ user, team, teamId, alreadyOnTeam }) {
 
       if (profileError) throw profileError
 
-      const existingMembers = Array.isArray(teamState?.team_members)
+      let existingMembers = Array.isArray(teamState?.team_members)
         ? teamState.team_members
         : []
+      let existingEmails = normalizeMemberEmails(teamState?.member_emails)
+
+      const { data: latestTeam, error: latestTeamError } = await supabase
+        .from('teams')
+        .select('team_members, member_emails')
+        .eq('id', teamIdState)
+        .single()
+
+      if (!latestTeamError && latestTeam) {
+        existingMembers = Array.isArray(latestTeam.team_members)
+          ? latestTeam.team_members
+          : existingMembers
+        existingEmails = normalizeMemberEmails(latestTeam.member_emails) ?? existingEmails
+      }
+
+      const { data: profileData, error: profileFetchError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', user.id)
+        .single()
+
+      if (profileFetchError) throw profileFetchError
+      const profileEmail = profileData?.email || null
 
       if (!existingMembers.includes(user.id)) {
+        const updatePayload = {
+          team_members: [...existingMembers, user.id],
+        }
+        if (profileEmail && Array.isArray(existingEmails)) {
+          updatePayload.member_emails = existingEmails.includes(profileEmail)
+            ? existingEmails
+            : [...existingEmails, profileEmail]
+        }
+
         const { error: membersError } = await supabase
           .from('teams')
-          .update({ team_members: [...existingMembers, user.id] })
+          .update(updatePayload)
           .eq('id', teamIdState)
 
         if (membersError) throw membersError

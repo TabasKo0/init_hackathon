@@ -70,7 +70,7 @@ export default function DashboardLayout({ user, children }) {
 
           {/* Logout */}
           <div className="absolute bottom-4 left-4 right-4">
-            <form action="/auth/signout" method="post">
+            <form action="/auth/signout" method="POST">
               <button
                 type="submit"
                 className="block w-full px-4 py-2 rounded-lg border border-[#ff5c8a] text-[#ff5c8a] hover:bg-[#ff5c8a]/10 transition-all text-center text-sm font-semibold"
