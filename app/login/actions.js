@@ -18,10 +18,21 @@ export async function login(formData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    const message = error.message.includes('Invalid login credentials')
-      ? 'Incorrect password'
-      : error.message
-    return { error: message }
+    if (error.message.includes('Invalid login credentials')) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', data.email)
+        .maybeSingle()
+
+      if (!profile) {
+        return { error: 'Account not found. Please sign up first.' }
+      }
+
+      return { error: 'Incorrect password' }
+    }
+
+    return { error: error.message }
   }
 
   revalidatePath('/', 'layout')

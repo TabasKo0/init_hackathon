@@ -309,7 +309,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
           </div>
         ) : (
           <div className="flex flex-col md:flex-row gap-6 mt-6">
-            <div className="card glass flex-grow-1">
+            <div className="card glass flex-1 min-w-0">
               <h2 className="text-xl font-bold text-white mb-6">Team Members ({membersState.length})</h2>
 
               <div className="space-y-3">
@@ -347,9 +347,9 @@ export default function TeamClient({ user, team, members, isLeader }) {
                 )}
               </div>
             </div>
-            <div className="card glass flex-grow-1">
+            <div className="card glass flex-1 min-w-0">
               <h2 className="text-xl font-bold text-white mb-6">Team Information</h2>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-4">
                   <div>
                     <label className="text-xs uppercase tracking-[0.15em] text-slate-500 block mb-2">Team Name</label>
                     <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-white font-semibold">
@@ -382,6 +382,8 @@ export default function TeamClient({ user, team, members, isLeader }) {
                     <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-white font-semibold">
                       {membersState.length} / 6
                     </div>
+                      <p className='mt-4 break-words'>Note: If your team size is less than 4, your team might be merged with another team.
+                      </p>
                   </div>
 
                   {leaderState ? (
