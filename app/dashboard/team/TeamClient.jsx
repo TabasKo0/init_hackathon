@@ -17,17 +17,21 @@ export default function TeamClient({ user, team, members, isLeader }) {
   const [isWorking, setIsWorking] = useState(false)
   const [joinCopied, setJoinCopied] = useState(false)
   const [joinUrl, setJoinUrl] = useState('')
+  const [mergeUrl, setMergeUrl] = useState('')
+  const [mergeCopied, setMergeCopied] = useState(false)
 
   const hasTeam = !!teamState
 
   useEffect(() => {
     if (!hasTeam || !teamState?.id) {
       setJoinUrl('')
+      setMergeUrl('')
       return
     }
 
     if (typeof window !== 'undefined') {
       setJoinUrl(`${window.location.origin}/dashboard/team/join?teamId=${teamState.id}`)
+      setMergeUrl(`${window.location.origin}/dashboard/team/merge?mergeteam=${teamState.id}`)
     }
   }, [hasTeam, teamState?.id])
 
@@ -227,6 +231,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
     }
   }
 
+
   return (
     <DashboardLayout user={user}>
       {/* 3D Background */}
@@ -388,6 +393,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
                   {leaderState ? (
                     <div className="flex flex-wrap items-center gap-3">
+                      <p className='text-xl font-semibold'>Member Invitation : </p>
                       <button
                         type="button"
                         onClick={async () => {
@@ -400,7 +406,9 @@ export default function TeamClient({ user, team, members, isLeader }) {
                             setFormError('Unable to copy join link. Please copy it manually.')
                           }
                         }}
-                        className="rounded-md border border-[#23e6ff] px-4 py-2 text-sm font-bold text-[#23e6ff] hover:bg-[#23e6ff]/10"
+                        disabled={membersState.length >= 6}
+                        title={membersState.length >= 6 ? 'Team full' : ''}
+                        className="rounded-md border border-[#23e6ff] px-4 py-2 text-sm font-bold text-[#23e6ff] hover:bg-[#23e6ff]/10 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Copy join link
                       </button>
@@ -409,6 +417,38 @@ export default function TeamClient({ user, team, members, isLeader }) {
                       ) : null}
                     </div>
                   ) : null}
+
+                  {leaderState ? (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className='text-xl font-semibold'>Merge Teams : </p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setMergeCopied(false)
+                            if (!mergeUrl) return
+                            try {
+                              await navigator.clipboard.writeText(mergeUrl)
+                              setMergeCopied(true)
+                            } catch (error) {
+                              setFormError('Unable to copy merge link. Please copy it manually.')
+                            }
+                          }}
+                          disabled={membersState.length >= 6}
+                          title={membersState.length >= 6 ? 'Team full' : ''}
+                          className="rounded-md border border-[#ff2fd3] px-4 py-2 text-sm font-bold text-[#ff2fd3] hover:bg-[#ff2fd3]/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Copy merge link
+                        </button>
+                        
+                        {mergeCopied ? (
+                          <span className="text-xs text-emerald-400">Copied!</span>
+                        ) : null}
+                      </div>
+                      <p className='italic'>Share with leader of another team to initiate merge</p>
+                    </div>
+                  ) : null}
+
                 </div>
               </div>
             </div>
