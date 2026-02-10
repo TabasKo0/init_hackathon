@@ -14,12 +14,15 @@
     "@react-three/fiber": "^9.5.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
+    "@zxing/browser": "^0.1.5",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.562.0",
     "maath": "^0.10.8",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
+    "react-qr-rounded": "^1.0.0",
     "three": "^0.182.0"
   },
   "devDependencies": {
