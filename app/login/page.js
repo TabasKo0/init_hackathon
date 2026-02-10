@@ -22,7 +22,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      router.push('/dashboard/account')
     } catch (error) {
       toast.error('Unable to sign in right now.')
     } finally {
@@ -77,7 +77,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="neon-link font-semibold">Sign up</Link>
           </div>
         </div>
