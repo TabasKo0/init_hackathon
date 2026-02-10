@@ -11,9 +11,8 @@ export default function DashboardLayout({ user, children }) {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '' },
     { href: '/dashboard/team', label: 'Team', icon: '' },
-    { href: '/dashboard/tracks', label: 'Tracks', icon: '' },
     { href: '/updates', label: 'Updates', icon: ' ' },
-    { href: '/dashboard/account', label: 'account', icon: ' ' }
+    { href: '/dashboard/account', label: 'Account', icon: ' ' }
   ]
 
   return (
@@ -69,16 +68,7 @@ export default function DashboardLayout({ user, children }) {
           </nav>
 
           {/* Logout */}
-          <div className="absolute bottom-4 left-4 right-4">
-            <form action="/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="block w-full px-4 py-2 rounded-lg border border-[#ff5c8a] text-[#ff5c8a] hover:bg-[#ff5c8a]/10 transition-all text-center text-sm font-semibold"
-              >
-                Sign Out
-              </button>
-            </form>
-          </div>
+          
         </aside>
 
         {/* Main Content */}
