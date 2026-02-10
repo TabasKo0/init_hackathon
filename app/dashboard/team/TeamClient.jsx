@@ -333,7 +333,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
                   <div>
                     <label className="text-xs uppercase tracking-[0.15em] text-slate-500 block mb-2">Member Count</label>
                     <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-white font-semibold">
-                      {membersState.length} / 4
+                      {membersState.length} / 6
                     </div>
                   </div>
 
