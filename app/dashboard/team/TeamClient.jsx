@@ -37,16 +37,44 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
   if (!user) return null
 
-  async function fetchMembers(teamId) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, username, avatar_url, team_role')
-      .eq('team_id', teamId)
+ async function fetchMembers(teamId) {
+  const teamIdString = String(teamId)
+  
+  // First, get the team with its members
+  const { data: team, error: teamError } = await supabase
+    .from('teams')
+    .select('team_members')
+    .eq('id', teamIdString)
+    .single()
 
-    if (error) throw error
-    return data || []
+  if (teamError) {
+    console.error('Error fetching team:', teamError)
+    throw teamError
+  }
+  
+  if (!team || !team.team_members || team.team_members.length === 0) {
+    return []
   }
 
+  // Parse member IDs from JSONB
+  const memberIds = Array.isArray(team.team_members) 
+    ? team.team_members 
+    : []
+
+  // Fetch profile details for these members
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, username, avatar_url, team_role')
+    .in('id', memberIds)
+
+  if (error) {
+    console.error('Error fetching profiles:', error)
+    throw error
+  }
+
+  console.log(data)
+  return data || []
+}
   async function fetchProfileEmail(userId) {
     const { data, error } = await supabase
       .from('profiles')
