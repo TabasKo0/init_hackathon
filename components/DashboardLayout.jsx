@@ -12,7 +12,8 @@ export default function DashboardLayout({ user, children }) {
     { href: '/dashboard', label: 'Dashboard', icon: '' },
     { href: '/dashboard/team', label: 'Team', icon: '' },
     { href: '/updates', label: 'Updates', icon: ' ' },
-    { href: '/dashboard/account', label: 'Account', icon: ' ' }
+    { href: '/dashboard/account', label: 'Account', icon: ' ' },
+    { href: '/dashboard/hall-id', label: 'Hall ID', icon: ' ' }
   ]
 
   return (
