@@ -19,6 +19,10 @@ export default function TeamClient({ user, team, members, isLeader }) {
   const [joinUrl, setJoinUrl] = useState('')
   const [mergeUrl, setMergeUrl] = useState('')
   const [mergeCopied, setMergeCopied] = useState(false)
+  const [kickingMemberId, setKickingMemberId] = useState(null)
+  const [disbanding, setDisbanding] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [confirmModal, setConfirmModal] = useState(null)
 
   const hasTeam = !!teamState
 
@@ -259,9 +263,165 @@ export default function TeamClient({ user, team, members, isLeader }) {
     }
   }
 
+  async function handleKickMember(memberId) {
+    if (!teamState?.id || !memberId) return
+
+    const memberToKick = membersState.find((m) => m.id === memberId)
+    
+    setConfirmModal({
+      title: 'Kick Member',
+      message: `Are you sure you want to kick ${memberToKick?.full_name || memberToKick?.username || 'this member'} from the team?`,
+      action: async () => {
+        try {
+          setKickingMemberId(memberId)
+
+          const response = await fetch('/api/team/kick', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ teamId: teamState.id, memberId }),
+          })
+
+          const payload = await response.json()
+
+          if (!response.ok || !payload?.ok) {
+            toast.error(payload?.error || 'Unable to kick member.')
+            return
+          }
+
+          toast.success('Member kicked successfully.')
+          const nextMembers = await fetchMembers(teamState.id)
+          setMembersState(nextMembers)
+        } catch (error) {
+          toast.error(error.message || 'Unable to kick member.')
+        } finally {
+          setKickingMemberId(null)
+        }
+      },
+      confirmText: 'Kick',
+      cancelText: 'Cancel',
+      isDangerous: true,
+    })
+  }
+
+  async function handleDisbandTeam() {
+    if (!teamState?.id) return
+
+    setConfirmModal({
+      title: 'Disband Team',
+      message: `Are you sure you want to disband the team "${teamState.name}" ? This will remove all members and delete the team. This action cannot be undone.`,
+      action: async () => {
+        try {
+          setDisbanding(true)
+
+          const response = await fetch('/api/team/disband', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ teamId: teamState.id }),
+          })
+
+          const payload = await response.json()
+
+          if (!response.ok || !payload?.ok) {
+            toast.error(payload?.error || 'Unable to disband team.')
+            return
+          }
+
+          toast.success('Team disbanded successfully.')
+          setTeamState(null)
+          setMembersState([])
+          setLeaderState(false)
+        } catch (error) {
+          toast.error(error.message || 'Unable to disband team.')
+        } finally {
+          setDisbanding(false)
+        }
+      },
+      confirmText: 'Disband',
+      cancelText: 'Cancel',
+      isDangerous: true,
+    })
+  }
+
+  async function handleLeaveTeam() {
+    if (!teamState?.id) return
+
+    setConfirmModal({
+      title: 'Leave Team',
+      message: `Are you sure you want to leave the team "${teamState.name}"?`,
+      action: async () => {
+        try {
+          setLeaving(true)
+
+          const response = await fetch('/api/team/leave', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ teamId: teamState.id }),
+          })
+
+          const payload = await response.json()
+
+          if (!response.ok || !payload?.ok) {
+            toast.error(payload?.error || 'Unable to leave team.')
+            return
+          }
+
+          toast.success('You have left the team.')
+          setTeamState(null)
+          setMembersState([])
+          setLeaderState(false)
+        } catch (error) {
+          toast.error(error.message || 'Unable to leave team.')
+        } finally {
+          setLeaving(false)
+        }
+      },
+      confirmText: 'Leave',
+      cancelText: 'Cancel',
+      isDangerous: false,
+    })
+  }
+
 
   return (
     <DashboardLayout user={user}>
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
+          <div className="card glass max-w-sm w-full mx-4 border-white/20">
+            <h3 className="text-lg font-bold text-white mb-3">{confirmModal.title}</h3>
+            <p className="text-slate-300 text-sm mb-6">{confirmModal.message}</p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="flex-1 rounded-md border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition-all"
+              >
+                {confirmModal.cancelText || 'Cancel'}
+              </button>
+              <button
+                onClick={async () => {
+                  await confirmModal.action()
+                  setConfirmModal(null)
+                }}
+                className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all ${
+                  confirmModal.isDangerous
+                    ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30'
+                    : 'bg-gradient-to-r from-[#ff2fd3] to-[#23e6ff] text-white hover:opacity-90'
+                }`}
+              >
+                {confirmModal.confirmText || 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 3D Background */}
       <div className="fixed inset-0 -z-10 h-full w-full opacity-20 pointer-events-none">
         <Canvas camera={{ position: [0, 5, 8] }}>
@@ -373,6 +533,17 @@ export default function TeamClient({ user, team, members, isLeader }) {
                           ) : null}
                         </div>
 
+                        {leaderState && member.id !== user.id && (
+                          <button
+                            onClick={() => handleKickMember(member.id)}
+                            disabled={kickingMemberId === member.id}
+                            className="px-3 py-1.5 rounded-md bg-red-500/10 border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/20 disabled:opacity-50 transition-all"
+                            title="Remove member from team"
+                          >
+                            {kickingMemberId === member.id ? 'Removing...' : 'Kick'}
+                          </button>
+                        )}
+
                         
                       </div>
                     )
@@ -476,6 +647,35 @@ export default function TeamClient({ user, team, members, isLeader }) {
                       <p className='italic'>Share with leader of another team to initiate merge</p>
                     </div>
                   ) : null}
+
+                  {!leaderState && (
+                    <div className="pt-4 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={handleLeaveTeam}
+                        disabled={leaving}
+                        className="w-full rounded-md bg-yellow-500/10 border border-yellow-500/40 px-4 py-3 text-sm font-bold text-yellow-400 hover:bg-yellow-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        {leaving ? 'Leaving...' : 'Leave Team'}
+                      </button>
+                    </div>
+                  )}
+
+                  {leaderState && (
+                    <div className="pt-4 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={handleDisbandTeam}
+                        disabled={disbanding}
+                        className="w-full rounded-md bg-red-500/10 border border-red-500/40 px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        {disbanding ? 'Disbanding...' : 'Disband Team'}
+                      </button>
+                      <p className="mt-2 text-xs text-slate-400 italic">
+                        This will remove all members and delete the team permanently.
+                      </p>
+                    </div>
+                  )}
 
                 </div>
               </div>
