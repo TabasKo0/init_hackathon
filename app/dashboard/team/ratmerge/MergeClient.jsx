@@ -45,7 +45,7 @@ export default function MergeClient({ user, initiatorTeam, initiatorTeamId, targ
       try {
         const { data, error: fetchError } = await supabase
           .from('teams')
-          .select('id, name, team_members, member_emails, is_merged')
+          .select('id, name, is_merged')
           .eq('id', initiatorIdState)
           .single()
 

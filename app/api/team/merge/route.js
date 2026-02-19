@@ -9,24 +9,6 @@ const DEFAULT_TEAMS_RANGE = 'Teams!A:D'
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'
 
-function normalizeMemberEmails(rawEmails) {
-  if (Array.isArray(rawEmails)) return rawEmails
-  if (typeof rawEmails === 'string') {
-    try {
-      const parsed = JSON.parse(rawEmails)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
-    }
-  }
-  if (rawEmails && Array.isArray(rawEmails.emails)) return rawEmails.emails
-  return []
-}
-
-function toUniqueList(values) {
-  return Array.from(new Set(values.filter(Boolean)))
-}
-
 function base64UrlEncode(value) {
   return Buffer.from(value)
     .toString('base64')
@@ -90,7 +72,7 @@ async function getGoogleAccessToken() {
 async function loadTeam(supabase, teamId) {
   const { data, error } = await supabase
     .from('teams')
-    .select('id, name, number, owner_id, team_members, member_emails, is_merged')
+    .select('id, name, number, owner_id, is_merged')
     .eq('id', teamId)
     .single()
 
@@ -99,21 +81,6 @@ async function loadTeam(supabase, teamId) {
   }
 
   return { team: data, error: null }
-}
-
-function buildMergeData(teamA, teamB) {
-  const membersA = Array.isArray(teamA.team_members) ? teamA.team_members : []
-  const membersB = Array.isArray(teamB.team_members) ? teamB.team_members : []
-  const mergedMembers = toUniqueList([...membersA, ...membersB])
-
-  const emailsA = normalizeMemberEmails(teamA.member_emails)
-  const emailsB = normalizeMemberEmails(teamB.member_emails)
-  const mergedEmails = toUniqueList([...emailsA, ...emailsB])
-
-  return {
-    mergedMembers,
-    mergedEmails,
-  }
 }
 
 export async function POST(request) {
@@ -154,8 +121,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'One or both teams have already been merged into another team.' }, { status: 400 })
     }
 
-    const { mergedMembers, mergedEmails } = buildMergeData(initiatorTeam, targetTeam)
-    const combinedCount = mergedMembers.length
+    // Count members in both teams by querying profiles
+    const [{ count: initiatorCount }, { count: targetCount }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', initiatorTeamId),
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', targetTeamId),
+    ])
+
+    const combinedCount = (initiatorCount || 0) + (targetCount || 0)
     const isWithinLimit = combinedCount <= TEAM_MEMBER_LIMIT
 
     if (action === 'check') {
@@ -185,7 +163,7 @@ export async function POST(request) {
 
     const isLeader =
       profile?.team_id === targetTeam.id &&
-      (profile?.team_role === 'leader' || targetTeam.owner_id === user.id)
+      profile?.team_role === 'leader'
 
     if (!isLeader) {
       return NextResponse.json({ error: 'Only team leaders can merge.' }, { status: 403 })
@@ -205,8 +183,6 @@ export async function POST(request) {
       .from('teams')
       .update({
         name: mergedName,
-        team_members: mergedMembers,
-        member_emails: mergedEmails,
       })
       .eq('id', initiatorTeam.id)
 
@@ -223,6 +199,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unable to mark target team as merged.' }, { status: 500 })
     }
 
+    // Update all members from target team to adopt initiator team's team_id
     const { error: profileUpdateError } = await supabase
       .from('profiles')
       .update({ team_id: initiatorTeam.id, team_role: 'member' })

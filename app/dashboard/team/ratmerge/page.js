@@ -27,7 +27,7 @@ export default async function MergeTeamPage({ searchParams }) {
   if (initiatorTeamId) {
     const { data } = await supabase
       .from('teams')
-      .select('id, name, team_members, member_emails, is_merged')
+      .select('id, name, is_merged')
       .eq('id', initiatorTeamId)
       .single()
 
@@ -41,7 +41,7 @@ export default async function MergeTeamPage({ searchParams }) {
   if (targetTeamId) {
     const { data } = await supabase
       .from('teams')
-      .select('id, name, team_members, member_emails, owner_id, is_merged')
+      .select('id, name, owner_id, is_merged')
       .eq('id', targetTeamId)
       .single()
 

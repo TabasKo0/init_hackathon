@@ -41,67 +41,21 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
   if (!user) return null
 
- async function fetchMembers(teamId) {
-  const teamIdString = String(teamId)
-  
-  // First, get the team with its members
-  const { data: team, error: teamError } = await supabase
-    .from('teams')
-    .select('team_members')
-    .eq('id', teamIdString)
-    .single()
-
-  if (teamError) {
-    console.error('Error fetching team:', teamError)
-    throw teamError
-  }
-  
-  if (!team || !team.team_members || team.team_members.length === 0) {
-    return []
-  }
-
-  // Parse member IDs from JSONB
-  const memberIds = Array.isArray(team.team_members) 
-    ? team.team_members 
-    : []
-
-  // Fetch profile details for these members
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, username, avatar_url, team_role')
-    .in('id', memberIds)
-
-  if (error) {
-    console.error('Error fetching profiles:', error)
-    throw error
-  }
-
-  console.log(data)
-  return data || []
-}
-  async function fetchProfileEmail(userId) {
+  async function fetchMembers(teamId) {
+    const teamIdString = String(teamId)
+    
+    // Fetch all profiles that belong to this team
     const { data, error } = await supabase
       .from('profiles')
-      .select('email')
-      .eq('id', userId)
-      .single()
+      .select('id, full_name, username, avatar_url, team_role, email')
+      .eq('team_id', teamIdString)
 
-    if (error) throw error
-    return data?.email || null
-  }
-
-  function normalizeMemberEmails(rawEmails) {
-    if (Array.isArray(rawEmails)) return rawEmails
-    if (typeof rawEmails === 'string') {
-      try {
-        const parsed = JSON.parse(rawEmails)
-        return Array.isArray(parsed) ? parsed : null
-      } catch {
-        return null
-      }
+    if (error) {
+      console.error('Error fetching team members:', error)
+      throw error
     }
-    if (rawEmails && Array.isArray(rawEmails.emails)) return rawEmails.emails
-    return null
+
+    return data || []
   }
 
   async function handleCreateTeam(event) {
@@ -116,14 +70,23 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
     try {
       setIsWorking(true)
-      const profileEmail = await fetchProfileEmail(user.id)
+      
+      // Check if user already has a team
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('team_id')
+        .eq('id', user.id)
+        .single()
+      
+      if (userProfile?.team_id) {
+        setFormError('You are already a member of a team. Leave your current team first to create a new one.')
+        setIsWorking(false)
+        return
+      }
+
       const createPayload = {
         name: trimmedName,
         owner_id: user.id,
-        team_members: [user.id],
-      }
-      if (profileEmail) {
-        createPayload.member_emails = [profileEmail]
       }
 
       const { data: createdTeam, error: createError } = await supabase
@@ -203,7 +166,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
 
       const { data: foundTeam, error: teamError } = await supabase
         .from('teams')
-        .select('*')
+        .select('id, name')
         .eq('id', trimmedTeamId)
         .single()
 
@@ -211,37 +174,12 @@ export default function TeamClient({ user, team, members, isLeader }) {
         throw teamError || new Error('Team not found.')
       }
 
-      const existingMembers = Array.isArray(foundTeam.team_members)
-        ? foundTeam.team_members
-        : []
-      const existingEmails = normalizeMemberEmails(foundTeam.member_emails)
-
-      const profileEmail = await fetchProfileEmail(user.id)
-
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ team_id: foundTeam.id, team_role: 'member' })
         .eq('id', user.id)
 
       if (profileError) throw profileError
-
-      if (!existingMembers.includes(user.id)) {
-        const updatePayload = {
-          team_members: [...existingMembers, user.id],
-        }
-        if (profileEmail && Array.isArray(existingEmails)) {
-          updatePayload.member_emails = existingEmails.includes(profileEmail)
-            ? existingEmails
-            : [...existingEmails, profileEmail]
-        }
-
-        const { error: membersError } = await supabase
-          .from('teams')
-          .update(updatePayload)
-          .eq('id', foundTeam.id)
-
-        if (membersError) throw membersError
-      }
 
       await fetch('/api/team', {
         method: 'POST',
@@ -617,7 +555,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
                     </div>
                   ) : null}
 
-                  {leaderState ? (
+                  {/*{leaderState ? (
                     <div className="flex flex-wrap items-center gap-3">
                       <p className='text-xl font-semibold'>Merge Teams : </p>
                       <div className="flex flex-wrap items-center gap-3">
@@ -646,7 +584,7 @@ export default function TeamClient({ user, team, members, isLeader }) {
                       </div>
                       <p className='italic'>Share with leader of another team to initiate merge</p>
                     </div>
-                  ) : null}
+                  ) : null}*/}
 
                   {!leaderState && (
                     <div className="pt-4 border-t border-white/10">

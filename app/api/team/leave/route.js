@@ -3,20 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
-function normalizeMemberEmails(rawEmails) {
-  if (Array.isArray(rawEmails)) return rawEmails
-  if (typeof rawEmails === 'string') {
-    try {
-      const parsed = JSON.parse(rawEmails)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
-    }
-  }
-  if (rawEmails && Array.isArray(rawEmails.emails)) return rawEmails.emails
-  return []
-}
-
 export async function POST(request) {
   try {
     let payload = null
@@ -67,37 +53,6 @@ export async function POST(request) {
         { error: 'Team leaders cannot leave. Please disband the team or transfer leadership first.' },
         { status: 400 }
       )
-    }
-
-    // Get team details
-    const { data: team, error: teamError } = await supabase
-      .from('teams')
-      .select('id, name, team_members, member_emails')
-      .eq('id', teamId)
-      .single()
-
-    if (teamError || !team) {
-      return NextResponse.json({ error: 'Team not found.' }, { status: 404 })
-    }
-
-    // Remove user from team members array
-    const currentMembers = Array.isArray(team.team_members) ? team.team_members : []
-    const currentEmails = normalizeMemberEmails(team.member_emails)
-
-    const updatedMembers = currentMembers.filter((id) => id !== user.id)
-    const updatedEmails = currentEmails.filter((email) => email !== userProfile.email)
-
-    // Update team members array
-    const { error: teamUpdateError } = await supabase
-      .from('teams')
-      .update({
-        team_members: updatedMembers,
-        member_emails: updatedEmails,
-      })
-      .eq('id', teamId)
-
-    if (teamUpdateError) {
-      return NextResponse.json({ error: 'Unable to update team.' }, { status: 500 })
     }
 
     // Clear user's team_id and team_role

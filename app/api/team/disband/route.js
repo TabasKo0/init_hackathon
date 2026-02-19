@@ -31,17 +31,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
     }
 
-    // Get team details
-    const { data: team, error: teamError } = await supabase
-      .from('teams')
-      .select('id, name, owner_id, team_members')
-      .eq('id', teamId)
-      .single()
-
-    if (teamError || !team) {
-      return NextResponse.json({ error: 'Team not found.' }, { status: 404 })
-    }
-
     // Check if current user is the team leader
     const { data: userProfile } = await supabase
       .from('profiles')
@@ -51,27 +40,10 @@ export async function POST(request) {
 
     const isLeader =
       userProfile?.team_id === teamId &&
-      (userProfile?.team_role === 'leader' || team.owner_id === user.id)
+      userProfile?.team_role === 'leader'
 
     if (!isLeader) {
       return NextResponse.json({ error: 'Only team leaders can disband teams.' }, { status: 403 })
-    }
-
-    // Get all team members
-    const currentMembers = Array.isArray(team.team_members) ? team.team_members : []
-
-    if (currentMembers.length === 0) {
-      // Team has no members, just delete it
-      const { error: deleteError } = await supabase.from('teams').delete().eq('id', teamId)
-
-      if (deleteError) {
-        return NextResponse.json({ error: 'Unable to delete team.' }, { status: 500 })
-      }
-
-      return NextResponse.json({
-        ok: true,
-        message: 'Team disbanded successfully.',
-      })
     }
 
     // Clear all members' team_id and team_role
@@ -81,7 +53,7 @@ export async function POST(request) {
         team_id: null,
         team_role: null,
       })
-      .in('id', currentMembers)
+      .eq('team_id', teamId)
 
     if (profileUpdateError) {
       return NextResponse.json({ error: 'Unable to update member profiles.' }, { status: 500 })

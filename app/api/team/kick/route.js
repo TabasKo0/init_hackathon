@@ -3,20 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
-function normalizeMemberEmails(rawEmails) {
-  if (Array.isArray(rawEmails)) return rawEmails
-  if (typeof rawEmails === 'string') {
-    try {
-      const parsed = JSON.parse(rawEmails)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
-    }
-  }
-  if (rawEmails && Array.isArray(rawEmails.emails)) return rawEmails.emails
-  return []
-}
-
 export async function POST(request) {
   try {
     let payload = null
@@ -46,17 +32,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
     }
 
-    // Get team details
-    const { data: team, error: teamError } = await supabase
-      .from('teams')
-      .select('id, name, owner_id, team_members, member_emails')
-      .eq('id', teamId)
-      .single()
-
-    if (teamError || !team) {
-      return NextResponse.json({ error: 'Team not found.' }, { status: 404 })
-    }
-
     // Check if current user is the team leader
     const { data: userProfile } = await supabase
       .from('profiles')
@@ -66,7 +41,7 @@ export async function POST(request) {
 
     const isLeader =
       userProfile?.team_id === teamId &&
-      (userProfile?.team_role === 'leader' || team.owner_id === user.id)
+      userProfile?.team_role === 'leader'
 
     if (!isLeader) {
       return NextResponse.json({ error: 'Only team leaders can kick members.' }, { status: 403 })
@@ -80,7 +55,7 @@ export async function POST(request) {
     // Get member to be kicked
     const { data: memberProfile, error: memberError } = await supabase
       .from('profiles')
-      .select('id, email, team_id')
+      .select('id, team_id')
       .eq('id', memberId)
       .single()
 
@@ -91,26 +66,6 @@ export async function POST(request) {
     // Verify member is on the team
     if (memberProfile.team_id !== teamId) {
       return NextResponse.json({ error: 'Member is not on this team.' }, { status: 400 })
-    }
-
-    // Remove member from team
-    const currentMembers = Array.isArray(team.team_members) ? team.team_members : []
-    const currentEmails = normalizeMemberEmails(team.member_emails)
-
-    const updatedMembers = currentMembers.filter((id) => id !== memberId)
-    const updatedEmails = currentEmails.filter((email) => email !== memberProfile.email)
-
-    // Update team members array
-    const { error: teamUpdateError } = await supabase
-      .from('teams')
-      .update({
-        team_members: updatedMembers,
-        member_emails: updatedEmails,
-      })
-      .eq('id', teamId)
-
-    if (teamUpdateError) {
-      return NextResponse.json({ error: 'Unable to update team.' }, { status: 500 })
     }
 
     // Clear member's team_id and team_role
@@ -126,10 +81,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unable to update member profile.' }, { status: 500 })
     }
 
+    // Count remaining team members
+    const { count: memberCount, error: countError } = await supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('team_id', teamId)
+
+    const finalCount = memberCount || 0
+
     return NextResponse.json({
       ok: true,
       message: 'Member kicked successfully.',
-      memberCount: updatedMembers.length,
+      memberCount: finalCount,
     })
   } catch (unexpectedError) {
     return NextResponse.json(
